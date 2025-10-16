@@ -4,11 +4,15 @@ import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.transaction.annotation.Transactional;
 import study.data_jpa.dto.MemberDto;
 import study.data_jpa.entity.Member;
 import study.data_jpa.entity.Team;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -124,14 +128,75 @@ class MemberRepositoryTest {
         member1.setTeam(team1);
         memberRepository.save(member1);
 
-
-
-
         List<MemberDto> result = memberRepository.findMemberDto();
 
         for(MemberDto user : result){
             System.out.println("MemberDto = " +user);
         }
+    }
+
+    @Test
+    public void findByNames(){
+        Member member1 = new Member("AAA", 10);
+        Member member2 = new Member("BBB", 20);
+
+        memberRepository.save(member1);
+        memberRepository.save(member2);
+
+        List<Member> result = memberRepository.findByName(Arrays.asList("AAA", "BBB"));
+
+        for(Member user : result){
+            System.out.println(user);
+        }
+    }
+
+    @Test
+    public void returnType(){
+        Member member1 = new Member("AAA", 10);
+        Member member2 = new Member("BBB", 20);
+
+        memberRepository.save(member1);
+        memberRepository.save(member2);
+
+        memberRepository.findListByUsername("AAA");
+//        memberRepository.findMemberByUsername("AAA");
+//        memberRepository.findOptionalByUsername("AAA");
+    }
+
+    @Test
+    public void paging(){
+        //given
+        memberRepository.save(new Member("member1", 10));
+        memberRepository.save(new Member("member2", 10));
+        memberRepository.save(new Member("member3", 10));
+        memberRepository.save(new Member("member4", 10));
+        memberRepository.save(new Member("member5", 10));
+
+        int age = 10;
+        PageRequest pageRequest = PageRequest.of(0, 3, Sort.by(Sort.Direction.DESC, "username"));
+
+        //when
+        Page<Member> page = memberRepository.findByAge(age,pageRequest);
+        Page<MemberDto> map = page.map(member -> new MemberDto(member.getId(), member.getUsername(), null)); //엔티티를 쉽게 map을 활용해서 Dto로 변환하는 법
+
+
+        //then
+        List<Member> content = page.getContent();
+        long totalElements = page.getTotalElements();
+
+//        for (Member member : content){
+//            System.out.println("가져온 멤버 수 = " + member);
+//        }
+//        System.out.println("토탈 값 = " + totalElements);
+
+        Assertions.assertThat(content.size()).isEqualTo(3);     //현재 페이지의 컬럼갯수
+        Assertions.assertThat(page.getTotalElements()).isEqualTo(5);    //총 컬럼 갯수
+        Assertions.assertThat(page.getNumber()).isEqualTo(0);           // 현재 페이지 번호
+        Assertions.assertThat(page.getTotalPages()).isEqualTo(2);       //전체 페이지 갯수
+        Assertions.assertThat(page.isFirst()).isTrue();                         //첫번째 페이지인가
+        Assertions.assertThat(page.hasNext()).isTrue();                         //다음 페이지가 있나
+
+
     }
 
 }
