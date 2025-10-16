@@ -2,6 +2,7 @@ package study.data_jpa.repository;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 import study.data_jpa.entity.Member;
 
@@ -69,4 +70,6 @@ public class MemberJpaRepository {
                 .setParameter("age", age)
                 .executeUpdate();
     }
+
+
 }
