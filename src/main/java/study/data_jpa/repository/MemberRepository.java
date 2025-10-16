@@ -3,6 +3,7 @@ package study.data_jpa.repository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -23,6 +24,8 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
     @Query("select m.username from Member m")
     List<String> findUsernameList();
 
+    List<Member> findByUsername(String username);
+
     @Query("select new study.data_jpa.dto.MemberDto(m.id, m.username, t.name) from Member m join m.team t")
     List<MemberDto> findMemberDto();
 
@@ -36,4 +39,8 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
 //    @Query(value = "select m from Member m left join m.team t",
 //                countQuery = "select count(m) from Member m")   //쿼리가 복잡해지면(성능 저하) 카운트 쿼리로 분리해주는것도 좋음.
     Page<Member> findByAge(int age, Pageable pageable);
+
+    @Modifying(clearAutomatically = true)   // 이걸 넣으면 알아서 영속성 컨텍스트를 clear를 해줌
+    @Query("update Member m set m.age = m.age + 1 where m.age >= :age")
+    int bulkAgePlus(@Param("age") int age);
 }

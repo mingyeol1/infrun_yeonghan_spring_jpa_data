@@ -1,5 +1,7 @@
 package study.data_jpa.repository;
 
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,6 +28,9 @@ class MemberRepositoryTest {
 
     @Autowired
     TeamRepository teamRepository;
+
+    @PersistenceContext
+    EntityManager em;
 
 
     @Test
@@ -196,7 +201,32 @@ class MemberRepositoryTest {
         Assertions.assertThat(page.isFirst()).isTrue();                         //첫번째 페이지인가
         Assertions.assertThat(page.hasNext()).isTrue();                         //다음 페이지가 있나
 
+    }
 
+    @Test
+    public void bulkUpdate(){
+        //given
+        memberRepository.save(new Member("member1", 10));
+        memberRepository.save(new Member("member2", 19));
+        memberRepository.save(new Member("member3", 20));
+        memberRepository.save(new Member("member4", 21));
+        memberRepository.save(new Member("member5", 40));
+
+
+        //when
+        int resultCount = memberRepository.bulkAgePlus(20);
+        // 벌크 연산은 영속성 컨텍스트를 거치지 않고 바로 DB에 반영되므로,
+        // 같은 트랜잭션 내에서 이미 조회된 엔티티와 DB 상태가 불일치할 수 있음.
+        // em.flush();
+        // em.clear();  ← 영속성 컨텍스트를 초기화하여 불일치 방지
+
+        List<Member> result = memberRepository.findByUsername("member5");
+        Member member5 = result.get(0);
+        System.out.println("member5 = " +  member5);
+
+
+        //then
+        Assertions.assertThat(resultCount).isEqualTo(3);
     }
 
 }
