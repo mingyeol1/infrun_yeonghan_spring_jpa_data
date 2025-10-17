@@ -291,4 +291,6 @@ class MemberRepositoryTest {
         List<Member> memberCustom = memberRepository.findMemberCustom();
     }
 
+
+
 }
