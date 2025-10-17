@@ -286,4 +286,9 @@ class MemberRepositoryTest {
 
     }
 
+    @Test
+    public void collCustom(){
+        List<Member> memberCustom = memberRepository.findMemberCustom();
+    }
+
 }
